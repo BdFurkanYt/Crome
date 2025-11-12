@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X CYBER 0 Browser</title>
+    <style>
+        /* CSS RESET & DEFAULTS */
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --glow-color: rgba(77, 133, 255, 0.5);
+            --accent-color: #4d85ff;
+            --accent-text: #ffffff;
+            --border-color: #dee2e6;
+            --secondary-text: #6c757d;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e9e9e9;
+            --card-bg: #1e1e1e;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --glow-color: rgba(77, 133, 255, 0.6);
+            --accent-color: #4d85ff;
+            --accent-text: #ffffff;
+            --border-color: #333;
+            --secondary-text: #a0a0a0;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        /* STARTUP GLOW ANIMATION */
+        @keyframes startup-glow {
+            0% { box-shadow: 0 0 0px var(--glow-color); }
+            50% { box-shadow: 0 0 20px var(--glow-color); }
+            100% { box-shadow: 0 0 0px var(--glow-color); }
+        }
+
+        body.startup {
+            animation: startup-glow 2s ease-out;
+        }
+
+        /* LAYOUT */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* HEADER */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent-color);
+        }
+
+        .controls button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        
+        .controls button:hover, .controls button:focus-visible {
+            background-color: rgba(128, 128, 128, 0.2);
+        }
+
+        .controls button svg {
+            width: 22px;
+            height: 22px;
+            fill: var(--text-color);
+        }
+
+        #incognito-toggle.active svg {
+            fill: var(--accent-color);
+        }
+        
+        /* MAIN CONTENT */
+        main {
+            padding: 1rem 0;
+        }
+
+        .search-section {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        /* SEARCH BOX */
+        .search-box-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 1rem;
+            padding-right: 3.5rem; /* Space for the button */
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 8px var(--glow-color);
+        }
+
+        #search-button {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #search-button svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--accent-text);
+        }
+        
+        /* PSE CONTAINERS */
+        #search-results {
+            margin-top: 2rem;
+        }
+
+        /* CARD SECTIONS */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .card ul {
+            list-style: none;
+        }
+
+        .card li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .card a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .card a:hover {
+            text-decoration: underline;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            cursor: pointer;
+            padding: 0.2rem;
+        }
+
+        .delete-btn:hover {
+            color: #dc3545;
+        }
+        
+        /* QUICK LINKS GRID */
+        #quick-links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .quick-link-item a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .quick-link-item a:hover {
+            background-color: rgba(128, 128, 128, 0.1);
+            text-decoration: none;
+        }
+
+        .quick-link-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .quick-link-icon img {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .quick-link-item span {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .add-item-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .add-item-form input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        .add-item-form button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background-color: var(--accent-color);
+            color: var(--accent-text);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* MODALS (for adding items) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close-btn {
+            color: var(--secondary-text);
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* ADVERTISEMENT STYLES */
+        .ad-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .ad-label {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .ad-wrapper {
+            display: inline-block;
+            overflow: hidden;
+        }
+
+        /* ACCESSIBILITY */
+        :focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="startup">
+
+    <header class="app-header">
+        <div class="logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path></svg>
+            <span>X CYBER 0 Browser</span>
+        </div>
+        <div class="controls">
+            <button id="theme-toggle" aria-label="Toggle light/dark theme">
+                <svg id="theme-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+            </button>
+            <button id="incognito-toggle" aria-label="Toggle incognito mode">
+                <svg viewBox="0 0 24 24"><path d="M12 1.95c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S17.52 1.95 12 1.95zm0 2c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            </button>
+            <button id="clear-data" aria-label="Clear all saved data">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- SEARCH -->
+        <section class="search-section" aria-labelledby="search-heading">
+             <h1 id="search-heading" class="visually-hidden">Web Search</h1>
+             <form id="search-form" class="search-box-container" role="search">
+                <div id="pse-searchbox-container">
+                    <!-- Google PSE Searchbox will be rendered here -->
+                </div>
+                <!-- Fallback search input -->
+                <input type="search" id="search-input" placeholder="Search the web...">
+                <button type="submit" id="search-button" aria-label="Search">
+                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </button>
+            </form>
+        </section>
+
+        <!-- Google PSE Results Container -->
+        <div id="search-results">
+             <!-- PASTE_PSE_SCRIPT_HERE -->
+        </div>
+
+        <!-- ADVERTISEMENT SECTION -->
+        <div class="ad-container">
+            <div class="ad-label">Advertisement</div>
+            <div class="ad-wrapper">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '803d1a7dab3471c4d3f9acfadf054f2b',
+                        'format' : 'iframe',
+                        'height' : 50,
+                        'width' : 320,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="//www.highperformanceformat.com/803d1a7dab3471c4d3f9acfadf054f2b/invoke.js"></script>
+            </div>
+        </div>
+
+        <div id="homepage-content">
+            <!-- QUICK LINKS -->
+            <section class="card" id="quick-links-card" aria-labelledby="quick-links-heading">
+                <h2 id="quick-links-heading">Quick Links</h2>
+                <div id="quick-links-grid"></div>
+                <button id="add-quick-link-btn" class="add-item-btn" aria-label="Add new quick link">+ Add Link</button>
+            </section>
+
+            <!-- BOOKMARKS -->
+            <section class="card" id="bookmarks-card" aria-labelledby="bookmarks-heading">
+                <h2 id="bookmarks-heading">Bookmarks</h2>
+                <ul id="bookmarks-list"></ul>
+                <button id="add-bookmark-btn" class="add-item-btn" aria-label="Add new bookmark">+ Add Bookmark</button>
+            </section>
+
+            <!-- HISTORY -->
+            <section class="card" id="history-card" aria-labelledby="history-heading">
+                <h2 id="history-heading">Recent Searches</h2>
+                <ul id="history-list"></ul>
+            </section>
+        </div>
+    </main>
+    
+    <!-- ADD ITEM MODAL -->
+    <div id="add-item-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" aria-label="Close modal">&times;</span>
+            <h3 id="modal-title">Add New Item</h3>
+            <form id="add-item-form">
+                <input type="hidden" id="item-type-input">
+                <div class="form-group">
+                    <label for="item-name-input">Name</label>
+                    <input type="text" id="item-name-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="item-url-input">URL</label>
+                    <input type="url" id="item-url-input" required placeholder="https://example.com">
+                </div>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        /* ELEMENT SELECTORS */
+        const themeToggle = document.getElementById('theme-toggle');
+        const incognitoToggle = document.getElementById('incognito-toggle');
+        const clearDataBtn = document.getElementById('clear-data');
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const searchResultsContainer = document.getElementById('search-results');
+        const homepageContent = document.getElementById('homepage-content');
+        
+        const quickLinksGrid = document.getElementById('quick-links-grid');
+        const bookmarksList = document.getElementById('bookmarks-list');
+        const historyList = document.getElementById('history-list');
+
+        const addQuickLinkBtn = document.getElementById('add-quick-link-btn');
+        const addBookmarkBtn = document.getElementById('add-bookmark-btn');
+        
+        const modal = document.getElementById('add-item-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalForm = document.getElementById('add-item-form');
+        const itemTypeInput = document.getElementById('item-type-input');
+        const itemNameInput = document.getElementById('item-name-input');
+        const itemUrlInput = document.getElementById('item-url-input');
+        const closeModalBtn = document.querySelector('.close-btn');
+
+        let isIncognito = false;
+
+        /* INITIALIZATION */
+        const init = () => {
+            applyTheme();
+            checkIncognito();
+            loadAllData();
+            setTimeout(() => document.body.classList.remove('startup'), 500);
+        };
+        
+        /* THEME MANAGEMENT */
+        const applyTheme = () => {
+            const storedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (storedTheme === 'dark' || (!storedTheme && systemPrefersDark)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        };
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        /* INCOGNITO MODE */
+        const checkIncognito = () => {
+             isIncognito = sessionStorage.getItem('incognito') === 'true';
+             if (isIncognito) {
+                incognitoToggle.classList.add('active');
+                document.body.style.filter = "grayscale(50%)"; // Visual cue
+             }
+        };
+        
+        incognitoToggle.addEventListener('click', () => {
+            isIncognito = !isIncognito;
+            if (isIncognito) {
+                sessionStorage.setItem('incognito', 'true');
+                incognitoToggle.classList.add('active');
+                document.body.style.filter = "grayscale(50%)";
+            } else {
+                sessionStorage.removeItem('incognito');
+                incognitoToggle.classList.remove('active');
+                document.body.style.filter = "none";
+            }
+        });
+        
+        /* LOCAL STORAGE MANAGEMENT */
+        const getData = (key, defaultValue = []) => {
+            const data = localStorage.getItem(key);
+            try {
+                return data ? JSON.parse(data) : defaultValue;
+            } catch (e) {
+                console.error(`Error parsing ${key} from localStorage`, e);
+                return defaultValue;
+            }
+        };
+        
+        const setData = (key, value) => {
+            if (isIncognito) return;
+            localStorage.setItem(key, JSON.stringify(value));
+        };
+
+        const clearAllData = () => {
+            if (confirm('Are you sure you want to clear all links, bookmarks, and history? This cannot be undone.')) {
+                localStorage.removeItem('quickLinks');
+                localStorage.removeItem('bookmarks');
+                localStorage.removeItem('history');
+                loadAllData();
+            }
+        };
+        
+        clearDataBtn.addEventListener('click', clearAllData);
+
+        /* DATA RENDERING */
+        const loadAllData = () => {
+            renderQuickLinks();
+            renderBookmarks();
+            renderHistory();
+        };
+
+        const renderQuickLinks = () => {
+            const links = getData('quickLinks', [
+                { name: 'YouTube', url: 'https://youtube.com' },
+                { name: 'Facebook', url: 'https://facebook.com' },
+                { name: 'Google', url: 'https://google.com' },
+                { name: 'GitHub', url: 'https://github.com' },
+            ]);
+            quickLinksGrid.innerHTML = links.map((link, index) => `
+                <div class="quick-link-item">
+                     <a href="${link.url}" target="_blank" rel="noopener noreferrer">
+                         <div class="quick-link-icon">
+                             <img src="https://www.google.com/s2/favicons?sz=64&domain_url=${link.url}" alt="">
+                         </div>
+                         <span>${link.name}</span>
+                     </a>
+                     <button class="delete-btn" data-type="quickLink" data-index="${index}" aria-label="Delete ${link.name} quick link">&times;</button>
+                 </div>
+            `).join('');
+        };
+        
+        const renderBookmarks = () => {
+            const bookmarks = getData('bookmarks');
+            bookmarksList.innerHTML = bookmarks.map((bookmark, index) => `
+                <li>
+                    <a href="${bookmark.url}" target="_blank" rel="noopener noreferrer">${bookmark.name}</a>
+                    <button class="delete-btn" data-type="bookmark" data-index="${index}" aria-label="Delete ${bookmark.name} bookmark">&times;</button>
+                </li>
+            `).join('') || '<li>No bookmarks yet.</li>';
+        };
+
+        const renderHistory = () => {
+            const history = getData('history');
+            historyList.innerHTML = history.map((item, index) => `
+                <li>
+                    <span>${item}</span>
+                    <button class="delete-btn" data-type="history" data-index="${index}" aria-label="Delete ${item} from history">&times;</button>
+                </li>
+            `).join('') || '<li>No recent searches.</li>';
+        };
+        
+        /* ADD/DELETE ITEMS */
+        const openModal = (type) => {
+            modal.style.display = 'block';
+            modalTitle.textContent = type === 'quickLink' ? 'Add New Quick Link' : 'Add New Bookmark';
+            itemTypeInput.value = type;
+            modalForm.reset();
+            itemNameInput.focus();
+        };
+
+        const closeModal = () => {
+            modal.style.display = 'none';
+        };
+        
+        addQuickLinkBtn.addEventListener('click', () => openModal('quickLink'));
+        addBookmarkBtn.addEventListener('click', () => openModal('bookmark'));
+        closeModalBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => {
+            if (e.target == modal) closeModal();
+        });
+
+        modalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const type = itemTypeInput.value;
+            const name = itemNameInput.value.trim();
+            let url = itemUrlInput.value.trim();
+            
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+
+            if (name && url) {
+                if (type === 'quickLink') {
+                    const links = getData('quickLinks');
+                    links.push({ name, url });
+                    setData('quickLinks', links);
+                    renderQuickLinks();
+                } else if (type === 'bookmark') {
+                    const bookmarks = getData('bookmarks');
+                    bookmarks.push({ name, url });
+                    setData('bookmarks', bookmarks);
+                    renderBookmarks();
+                }
+                closeModal();
+            }
+        });
+        
+        document.body.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const type = e.target.dataset.type;
+                const index = parseInt(e.target.dataset.index, 10);
+                
+                if (type === 'quickLink') {
+                    const links = getData('quickLinks');
+                    links.splice(index, 1);
+                    setData('quickLinks', links);
+                    renderQuickLinks();
+                } else if (type === 'bookmark') {
+                    const bookmarks = getData('bookmarks');
+                    bookmarks.splice(index, 1);
+                    setData('bookmarks', bookmarks);
+                    renderBookmarks();
+                } else if (type === 'history') {
+                    const history = getData('history');
+                    history.splice(index, 1);
+                    setData('history', history);
+                    renderHistory();
+                }
+            }
+        });
+        
+        /* SEARCH FUNCTIONALITY */
+        const handleSearch = (query) => {
+            if (!query) return;
+
+            // Add to history
+            if (!isIncognito) {
+                let history = getData('history');
+                // Remove if already exists to move it to the top
+                history = history.filter(item => item !== query);
+                history.unshift(query);
+                if (history.length > 20) history.pop(); // Limit history size
+                setData('history', history);
+                renderHistory();
+            }
+
+            // PSE Integration Check
+            if (typeof google !== 'undefined' && google.search.cse) {
+                 // If PSE is loaded, it will handle search.
+                 // Show results and hide homepage
+                 homepageContent.style.display = 'none';
+                 searchResultsContainer.style.display = 'block';
+            } else {
+                // Fallback search
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                window.open(searchUrl, '_blank');
+            }
+            searchInput.value = '';
+        };
+
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            handleSearch(query);
+        });
+        
+        /* PSE WIRING */
+        // Note: The Google PSE script will automatically find and use the
+        // #pse-searchbox-container and #search-results divs if they exist.
+        // It replaces the native search box.
+        // We need to detect if PSE script is loaded.
+        
+        const checkForPSE = () => {
+             const pseScript = document.querySelector('script[src*="cse.google.com"]');
+             if(pseScript) {
+                // PSE script is present. Hide fallback and show PSE container.
+                document.getElementById('search-input').style.display = 'none';
+                document.getElementById('search-button').style.display = 'none';
+                // The PSE script itself should be uncommented and placed
+                // in the `<!-- PASTE_PSE_SCRIPT_HERE -->` location.
+                // It will automatically create its searchbox.
+             } else {
+                // PSE script is not present. Use fallback.
+                document.getElementById('pse-searchbox-container').style.display = 'none';
+             }
+        };
+
+        checkForPSE();
+        
+        // Run initializer
+        init();
+    });
+    </script>
+</body>
+</html>
